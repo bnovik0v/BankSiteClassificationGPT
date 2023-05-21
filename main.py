@@ -1,5 +1,6 @@
 """ This is a demo of bank site classification. """
 
+import os
 import requests
 import streamlit as st
 from langchain import OpenAI, LLMChain
@@ -10,6 +11,16 @@ from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
 load_dotenv()
+
+
+st.sidebar.title('Bank Site Classification')
+st.sidebar.write('This is a demo of bank site classification. ')
+st.sidebar.write('#')
+
+# Ask user to input OPENAI_API_KEY
+OPENAI_API_KEY = st.sidebar.text_input('Your OpenAI API key', type='password')
+if OPENAI_API_KEY:
+    os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
 
 template = """Analyze the bank's website content and categorize it based on:
 
@@ -92,13 +103,11 @@ def get_article(url):
 
 
 def main():
-    st.sidebar.title('Bank Site Classification')
-    st.sidebar.write('This is a demo of bank site classification. ')
     st.write('Please, provide the url of the site you want to classify.')
     # user can enter or select an url from list
     url = st.text_input('URL', 'https://www.migrosbank.ch/privatpersonen/konten-karten/karten.html')
     st.write('You selected:', url)
-    if st.button('Classify'):
+    if st.button('Classify', disabled=not OPENAI_API_KEY):
         st.markdown('---')
         article = get_article(url)
         article.text = article.text[:10_000]
