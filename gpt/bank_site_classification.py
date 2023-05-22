@@ -61,7 +61,7 @@ def classify_site(site_content):
         return {'error': str(e)}
 
     try:
-        parsed_response = retry_parsing(parser, response, prompt.format_prompt(site_content='...'))
+        parsed_response = retry_parsing(parser, response)
     except Exception as e:
         return {'error': str(e)}
 

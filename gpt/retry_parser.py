@@ -66,7 +66,7 @@ class RetryOutputParserForJson(BaseOutputParser):
         return self.parser.get_format_instructions()
 
 
-def retry_parsing(parser, bad_response, prompt_value):
+def retry_parsing(parser, bad_response):
     """
     Retry parsing the response with RetryWithErrorOutputParser.
     :param parser: parser to use
@@ -78,5 +78,8 @@ def retry_parsing(parser, bad_response, prompt_value):
         parser=parser,
         llm=OpenAI(temperature=0)
     )
-    fixed_response = retry_parser.parse_with_prompt(bad_response, parser.get_format_instructions())
+    fixed_response = retry_parser.parse_with_prompt(
+        bad_response,
+        parser.get_format_instructions()
+    )
     return fixed_response

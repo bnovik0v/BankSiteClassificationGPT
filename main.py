@@ -2,6 +2,7 @@
 
 import os
 import requests
+from typing import Optional
 
 import streamlit as st
 from pydantic import BaseModel, Field
@@ -11,6 +12,12 @@ from bs4 import BeautifulSoup
 from gpt.bank_site_classification import classify_site
 
 load_dotenv()
+
+st.set_page_config(
+     page_title="Bank Page Classification",
+     page_icon="🔍",
+     initial_sidebar_state="expanded",
+)
 
 st.sidebar.title('Bank Site Classification')
 st.sidebar.write('This is a demo of bank site classification. ')
@@ -25,7 +32,7 @@ if OPENAI_API_KEY:
 class Article(BaseModel):
     title: str = Field(description="Title")
     text: str = Field(description="Text")
-    meta: str = Field(description="Meta information")
+    meta: Optional[str] = Field(description="Meta information")
 
     def __str__(self):
         return f'{self.title}\n\n{self.text}\n\n{self.meta}'
@@ -44,7 +51,6 @@ def get_article(url):
     if meta:
         meta = meta['content']
     body = soup.find('body')
-    # find main or article tag
     main = body.find('main')
     if main:
         body = main
@@ -56,13 +62,13 @@ def get_article(url):
     return article
 
 
-def bank_site_classification_gpt(article):
+@st.cache_data(ttl=60 * 60 * 24)
+def bank_site_classification_gpt(url):
     """ Classify a site based on its content using GPT-3. """
+    article = get_article(url)
     article.text = article.text[:10_000]
     result = classify_site(article)
-    st.markdown('**Entity:**\t' + result.entity)
-    st.write('**Product:**\t', result.product)
-    st.write('**Details:**\t', result.details)
+    st.json(result.dict())
 
 
 def main():
@@ -70,9 +76,10 @@ def main():
     url = st.text_input('URL', 'https://www.migrosbank.ch/privatpersonen/konten-karten/karten.html')
     st.write('You selected:', url)
     if st.button('Classify', disabled=not OPENAI_API_KEY):
-        st.markdown('---')
-        article = get_article(url)
-        bank_site_classification_gpt(article)
+        st.divider()
+        st.write('Using GPT:')
+        bank_site_classification_gpt(url)
+
 
 
 if __name__ == '__main__':
