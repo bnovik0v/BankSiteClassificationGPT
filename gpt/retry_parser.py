@@ -17,7 +17,7 @@ NAIVE_COMPLETION_RETRY = """Json:
 {json}
 ```
 
-Above, the Json is not valid.
+Above, the Json is not right.
 
 {format_instructions}
 

@@ -9,14 +9,15 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
-from gpt.bank_site_classification import classify_site
+from gpt.bank_site_classification import classify_site as classify_site_gpt
+from heuristic.bank_site_classification import classify_site as classify_site_heuristic
 
 load_dotenv()
 
 st.set_page_config(
-     page_title="Bank Page Classification",
-     page_icon="🔍",
-     initial_sidebar_state="expanded",
+    page_title="Bank Page Classification",
+    page_icon="🔍",
+    initial_sidebar_state="expanded",
 )
 
 st.sidebar.title('Bank Site Classification')
@@ -57,6 +58,8 @@ def get_article(url):
     article = body.find('article')
     if article:
         body = article
+    for script in body(["script", "style"]):
+        script.decompose()
     text = body.get_text()
     article = Article(title=title, text=text, meta=meta)
     return article
@@ -67,8 +70,16 @@ def bank_site_classification_gpt(url):
     """ Classify a site based on its content using GPT-3. """
     article = get_article(url)
     article.text = article.text[:10_000]
-    result = classify_site(article)
-    st.json(result.dict())
+    result = classify_site_gpt(article)
+    return result.dict()
+
+
+@st.cache_data(ttl=60 * 60 * 24)
+def bank_site_classification_heuristic(url):
+    """ Classify a site based on its content using heuristics. """
+    article = get_article(url)
+    result = classify_site_heuristic(str(article))
+    return result.dict()
 
 
 def main():
@@ -77,9 +88,11 @@ def main():
     st.write('You selected:', url)
     if st.button('Classify', disabled=not OPENAI_API_KEY):
         st.divider()
-        st.write('Using GPT:')
-        bank_site_classification_gpt(url)
-
+        col0, col1 = st.columns(2)
+        col1.write('Using heuristics:')
+        col1.json(bank_site_classification_heuristic(url))
+        col0.write('Using GPT:')
+        col0.json(bank_site_classification_gpt(url))
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 """ Use GPT-3 to classify a bank's website content based on entity, product, and details. """
 
+from typing import List
+
 from pydantic import BaseModel, Field
 from langchain import OpenAI, LLMChain
 from langchain.output_parsers import PydanticOutputParser
@@ -7,24 +9,22 @@ from langchain.prompts import PromptTemplate
 
 from .retry_parser import retry_parsing
 
-template = """Analyze the bank's website content and categorize it based on:
+template = """Analyze the provided bank website content and categorize the information into: 
+    1. Entity: The bank's specific division, e.g., 'Personal Banking', 'Business Banking', 'Investment Banking'. 
+    2. Product: The exact service/product offered, e.g., 'Checking Accounts', 'Savings Accounts', 'Credit Cards',
+     various types of 'Loans', 'Investment Services', 'Insurance Products'. 
+     3. Details: Briefly summarize key features of the service/product.
 
-    Entity: Identify and distinguish the sector within the bank, such as 'Personal Banking', 
-    'Business Banking', 'Investment Banking', among others.
+Your answer should follow these rules:
+    a. Each category's response must not exceed four words.
+    b. Avoid using product names or the bank's name.
+    c. Be short and concise.
+    d. Use English.
 
-    Product: Ascertain the specific service or product offered by the bank. This can be 'Checking Accounts', 
-    'Savings Accounts', 'Credit Cards', various types of 'Loans' (like 'Mortgage Loans', 'Personal Loans', 
-    'Auto Loans'), 'Investment Services', 'Insurance Products', and more.
-
-    Details: Briefly highlight the specific characteristic or feature of the aforementioned product or service. This 
-    could involve details like interest rates, fees, benefits, terms and conditions, and other pertinent information.
+Website content:
+"{site_content}"
 
 {format_instructions}
-
-REMEMBER: No more than 4 words for each variable. Don't use names of products or bank in your answer.
-
-Site content:
-"{site_content}"
 
 Answer:
 """
@@ -33,7 +33,7 @@ Answer:
 class BankSiteClassification(BaseModel):
     entity: str = Field(description="Sector within the bank")
     product: str = Field(description="Specific service or product")
-    details: str = Field(description="Specific characteristic")
+    details: List[str] = Field(description="List of specific characteristics")
 
 
 parser = PydanticOutputParser(
