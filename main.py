@@ -70,8 +70,9 @@ def bank_site_classification_gpt(url):
     """ Classify a site based on its content using GPT-3. """
     article = get_article(url)
     article.text = article.text[:10_000]  # ''
-    result, usage_info = classify_site_gpt(article)
-    st.info(usage_info)
+    # result, usage_info = classify_site_gpt(article)
+    result = classify_site_gpt(article)
+    # st.info(usage_info)
     if isinstance(result, dict) and 'error' in result:
         st.error(result['error'])
         return {}

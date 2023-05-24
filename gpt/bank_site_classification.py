@@ -82,7 +82,7 @@ def ask_chatgpt(messages):
     return chat(messages).content
 
 
-@return_usage_info
+#@return_usage_info
 def classify_site(site_content):
     """ Classify a site based on its content. """
     try:
