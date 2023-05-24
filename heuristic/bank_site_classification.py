@@ -8,7 +8,12 @@ from pydantic import Field, BaseModel
 from nltk.tokenize import word_tokenize
 import nltk
 
-nltk.download('punkt')
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
 
 with open('heuristic/keywords.json') as f:
     financial_keywords = json.load(f)
